@@ -2,13 +2,13 @@ import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 
-const Country = ({ country }) => {
-  console.log(country.flags)
+const CountryView = ({ country }) => {
+  let name = country.name.common
   return (
     <div>
       <h1><b>{country.name.common}</b></h1>
       <p><b>Capital: </b> {country.capital}</p>
-      <p><b>Area: </b> {country.area}</p>
+      <p><b>Area: </b>{country.area} km<sup>2</sup></p>
 
       <p><b>Languages: </b></p>
       <ol>
@@ -18,28 +18,41 @@ const Country = ({ country }) => {
       </ol>
 
       <img src={country.flags.png} alt="Flag" />
+      <br/>
+      <a href={"https://es.wikipedia.org/wiki/".concat(name)}>Mas información del país</a>
 
     </div>
 
   )
 }
 
-const Content = ({ countries }) => {
-  if (countries.length === 0) {
+const Content = ({ countriesFound, setCountriesFound }) => {
+  if (countriesFound.length === 0) {
     return <p>Ingrese país</p>
   }
-  if (countries.length === 1) {
-    return <Country country={countries[0]} />
-    // <Country country={countries} />
+  if (countriesFound.length === 1) {
+    return <CountryView country={countriesFound[0]} />
   }
-  if (countries.length < 10) {
-    return countries.map(c => <p key={c.name.common}>{c.name.common}</p>)
+  if (countriesFound.length < 10) {
+    return <ul>
+      {countriesFound.map((c, i) =>
+        <li key={i}>
+          <b>{c.name.common}  </b>
+          <button onClick={() => manageShowClick(c, setCountriesFound)}>Show</button>
+        </li>)
+
+      }
+    </ul >
   }
-  if (countries.length > 10) {
+  if (countriesFound.length > 10) {
     return <p>Demasiados paises, refine la busqueda</p>
   }
 }
 
+const manageShowClick = (c, setCountriesFound) => {
+  setCountriesFound([c])
+  document.getElementById("input").value = c.name.common
+}
 
 const App = () => {
   const [countries, setCountries] = useState([])
@@ -50,6 +63,7 @@ const App = () => {
       .then(response => response.json())
       .then(json => setCountries(json))
   }, [])
+
 
   const manageChange = (e) => {
     setCountriesFound([])
@@ -62,10 +76,10 @@ const App = () => {
 
   return (
     <>
-      <input onChange={manageChange} type="text" placeholder='Ingrese país'></input>
+      <input id="input" onChange={manageChange} type="text" placeholder='Ingrese país'></input>
       <br />
       <b>RESULTADO: </b>
-      <Content countries={countriesFound} />
+      <Content countriesFound={countriesFound} setCountriesFound={setCountriesFound} />
     </>
   )
 }
